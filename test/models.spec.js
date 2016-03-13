@@ -3,6 +3,7 @@ var db = require('../db');
 var Hotel = db.models.Hotel;
 var Restaurant = db.models.Restaurant;
 var Activity = db.models.Activity;
+var Day = db.models.Day;
 var seed = require('./seed');
 
 describe('models', function(){
@@ -11,7 +12,7 @@ describe('models', function(){
       .then(function(){
         done();
       });
-  
+
   });
 
   describe('hotels', function(){
@@ -48,14 +49,14 @@ describe('models', function(){
             done();
           }, done);
 
-      
+
       });
       it('can be created', function(){
         expect(howardJohnson).to.be.ok;
       });
-    
+
     });
-  
+
   });
 
   describe('restaurants', function(){
@@ -79,6 +80,7 @@ describe('models', function(){
           done();
         }, done);
     });
+
 
     it('first activity is Mahayana Temple', function(){
       expect(activities[0].name).to.equal('Mahayana Temple Buddhist Association');

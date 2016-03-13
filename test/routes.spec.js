@@ -3,6 +3,7 @@ var expect = require('chai').expect;
 var db = require('../db');
 var seed = require('./seed');
 var cheerio = require('cheerio');
+var Day = require('../db').models.Day;
 
 describe('Routes', function(){
   before(function(done){
@@ -10,6 +11,9 @@ describe('Routes', function(){
       .then(function(){
         done();
       });
+  });
+  after(function(){
+    return Day.remove();
   });
 
   describe('/', function(){
@@ -23,7 +27,7 @@ describe('Routes', function(){
           expect(res.text).to.contain('Temple');
         });
     });
-  
+
   });
 
   describe('/about', function(){
@@ -66,6 +70,22 @@ describe('Routes', function(){
         .then(function(res){
           expect(res.text).to.contain('silly error');
         });
+    });
+  });
+
+  describe('days routes',function(){
+    xit('create new day', function(){
+      return request.post('/api')
+      .then(function(res){
+        console.log(res.body);
+        expect(res.body.currentDay).to.equal(1);
+      });
+    });
+    it('gets first day', function(){
+      return Day.count()
+      .then(function(count){
+        expect(count).to.equal(1);
+      });
     });
   });
 });

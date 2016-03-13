@@ -1,25 +1,41 @@
-/* globals $,Mapper */ 
+/* globals $,Mapper */
 
 function Tripplanner(days, map, perm, attractions){
   this.currentIdx = 0;
   this.mapper = new Mapper(map, perm);
   this.days = days;
   this.attractions = attractions;
-  if(this.days.length === 0)
-    this.addDay();
+  var that = this;
+  getRequest('/api', function(res){
+    if (res.length === 0)
+      that.addDay();
+  }, function(err){
+    console.log(err);
+  });
   this.init();
   this.renderDayPicker(0);
 }
 
 Tripplanner.prototype.addDay = function(){
-    this.days.push(
-        {
-          Hotels: [],
-          Restaurants: [],
-          Activities: []
-        }
-    );
-    return this.days.length - 1;
+  var that = this;
+  postRequest('/api', null, function(res){
+    var day = res.currentDay;
+    var link = $('<a />').html(day);
+    var li = $('<li />').append(link);
+    var prev = $('#dayPicker .active').removeClass('active');
+    li.addClass('active');
+    $('#dayPicker').append(li);
+  },function(err){
+    console.log(err);
+  });
+    // this.days.push(
+    //     {
+    //       Hotels: [],
+    //       Restaurants: [],
+    //       Activities: []
+    //     }
+    // );
+    // return this.days.length - 1;
 };
 
 
@@ -58,7 +74,7 @@ Tripplanner.prototype.init = function(){
   });
 
   $('#dayAdder').click(function(){
-    that.renderDayPicker(that.addDay());
+    that.addDay();
   });
 
   $('#dayRemover').click(function(){
@@ -117,7 +133,7 @@ Tripplanner.prototype.hideItemInChooser = function(item){
     var sibs = option.siblings(':not(.hidden)');
     if(sibs.length)
       chooser.val(sibs[0].value);
-    else 
+    else
       chooser.val(null);
 };
 
@@ -129,7 +145,7 @@ Tripplanner.prototype.showItemInChooser = function(item){
 
 Tripplanner.prototype.removeItemFromDay = function(item){
     this.showItemInChooser(item);
-    var collection = this.days[this.currentIdx][item.category]; 
+    var collection = this.days[this.currentIdx][item.category];
     var idx = collection.indexOf(item._id);
     collection.splice(idx, 1);
     this.mapper.removeMarker(item);
@@ -137,20 +153,26 @@ Tripplanner.prototype.removeItemFromDay = function(item){
 
 Tripplanner.prototype.renderDayPicker = function(){
 
-    $('#dayPicker').empty();
-    this.days.forEach(function(day, index){
-      var link = $('<a />').html(index + 1);
-      var li = $('<li />').append(link);
-      if(day === this.currentDay())
-        li.addClass('active');
-      $('#dayPicker').append(li);
-    }, this);
-    this.renderDay();
+    //$('#dayPicker').empty();
+    var that = this;
+    getRequest('/api',function(res){
+      res.forEach(function(day, index){
+        var link = $('<a />').html(index + 1);
+        var li = $('<li />').append(link);
+        if(day === that.currentDay())
+          li.addClass('active');
+        $('#dayPicker').append(li);
+      }, that);
+      that.renderDay();
+    },
+    function(err){
+      console.log(err);
+    });
 };
 
 Tripplanner.prototype.currentDay = function(){
   return this.days[this.currentIdx];
-}
+};
 
 Tripplanner.prototype.renderDay = function(){
     this.resetLists();
