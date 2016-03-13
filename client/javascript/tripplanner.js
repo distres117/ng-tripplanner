@@ -68,8 +68,9 @@ Tripplanner.prototype.init = function(){
       if(that.days.length === 0 || !selector.val())
         return;
       var item = that.findItemByIdAndCategory(selector.val(), category);
-      that.days[that.currentIdx][category].push(item._id);
-      that.renderItem(item);
+
+      // that.days[that.currentIdx][category].push(item._id);
+      // that.renderItem(item);
     });
   });
 
