@@ -20,7 +20,7 @@ function callAjax(method, url, data,successcb,errorcb){
     contentType: 'application/json; charset=utf-8',
     dataType: 'json',
     url: url,
-    data: JSON.stringify(data),
+    data: data ? JSON.stringify(data) : {},
     success: successcb,
     error: errorcb
 });

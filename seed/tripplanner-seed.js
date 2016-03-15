@@ -72,7 +72,7 @@ mongoose.connect(process.env.CONN, function(){{}
       return Promise.map(data[modelName], function(item) {
         return models[modelName].create(item)
           .then(function(item){
-            console.log(modelName, item);
+            //console.log(modelName, item);
           });
       });
     }).then(function() {

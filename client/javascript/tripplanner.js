@@ -1,10 +1,9 @@
 // /* globals $,Mapper */
 
 var ajax;
-function Tripplanner(attractions){
+function Tripplanner(){
   this.currentDay = null;
   // this.mapper = new Mapper(map, perm);
-  this.attractions = attractions;
   var that = this;
   ajax.getRequest('/api', function(res){
     if (res.length === 0)
@@ -15,6 +14,7 @@ function Tripplanner(attractions){
   });
   this.init();
 }
+
 
 Tripplanner.prototype.init = function(){
   var that = this;
@@ -46,10 +46,9 @@ Tripplanner.prototype.init = function(){
     btn.click(function(){
       var selector = that.getChooser(category);
       var data = {
-        attrType: 'Hotel',
         attr: selector.val()
       };
-      ajax.putRequest('/api/' + that.currentDay, data, function(){
+      ajax.putRequest('/api/' + that.currentDay + '/' + category, data, function(){
         that.renderDay();
       });
       // if(that.days.length === 0 || !selector.val())
@@ -78,11 +77,6 @@ Tripplanner.prototype.addDay = function(){
   });
 };
 
-Tripplanner.prototype.findItemByIdAndCategory = function(id, cat){
-  return this.attractions[category].filter(function(_item){
-      return _item._id == id;
-    })[0];
-};
 
 Tripplanner.prototype.getChooser = function(category){
     return $('#' + category + 'Chooser');
@@ -150,7 +144,7 @@ Tripplanner.prototype.renderDayPicker = function(){
     var current;
     $('#dayPicker').empty();
     var that = this;
-    getRequest('/api',function(res){
+    ajax.getRequest('/api',function(res){
       var picker = $('#dayPicker');
       res.forEach(function(day,index){
         var link = $('<a />').html(index+1);
@@ -164,6 +158,7 @@ Tripplanner.prototype.renderDayPicker = function(){
         current = $('#dayPicker li').last();
       current.addClass('active');
       that.currentDay = current.attr('value');
+      that.renderDay();
 
     },
     function(err){
@@ -180,12 +175,10 @@ Tripplanner.prototype.renderDay = function(){
     var that = this;
     ajax.getRequest('/api/' + this.currentDay, function(res){
       var day = res;
-      console.log(res);
       that.categoryIterator(function(category){
-        var ids = day[category];
-        ids.forEach(function(id){
-          var item = this.findItemByIdAndCategory(id, category);
-          this.renderItem(item);
+        var items = day[category];
+        items.forEach(function(item){
+          this.renderItem(item, category);
         }, that);
       });
     }, function(err){
@@ -194,11 +187,11 @@ Tripplanner.prototype.renderDay = function(){
 
 };
 
-Tripplanner.prototype.renderItem = function(item){
-    var list = this.getDayList(item.category);
+Tripplanner.prototype.renderItem = function(item, category){
+    var list = this.getDayList(category);
     var li = $('<li />').addClass('list-group-item');
     li.attr('data-id', item._id);
-    li.attr('data-category', item.category);
+    li.attr('data-category', category);
     li.html(item.name);
     list.append(li);
     this.hideItemInChooser(item);

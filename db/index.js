@@ -40,13 +40,23 @@ var activitySchema = mongoose.Schema({
 
 var Activity = mongoose.model('Activity', activitySchema);
 
+
+
 var daySchema = new mongoose.Schema({
   currentDay: Number,
-  Hotels: {type: mongoose.Schema.Types.ObjectId, ref: 'Hotel'},
+  Hotels: [{type: mongoose.Schema.Types.ObjectId, ref: 'Hotel'}],
   Restaurants: [{type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant'}],
   Activities: [{type: mongoose.Schema.Types.ObjectId, ref: 'Activity'}],
 
 });
+
+// daySchema.post('save', function(doc, next){
+//   doc.populate('Hotels Restaurants Activities').execPopulate()
+//   .then(function(){
+//     next();
+//   })
+// });
+
 
 var Day = mongoose.model('day', daySchema);
 

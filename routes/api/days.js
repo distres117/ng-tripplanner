@@ -1,12 +1,17 @@
 var express = require('express');
 var router = express.Router();
 var models = require("../../db");
+var _models = {
+	Hotels : models.models.Hotel,
+	Restaurants: models.models.Restaurant,
+	Activities: models.models.Activity
+};
 var Promise = require('bluebird');
 
 var Day = models.models.Day;
 
 router.param('id', function(req,res,next,id){
-	Day.findById(id)
+	Day.findById(id).populate('Hotels Restaurants Activities')
 	.then(function(day){
 		req.day = day;
 		next();
@@ -36,22 +41,23 @@ router.route('/:id')
 		.then(function(){
 			res.sendStatus(204);
 		}, next);
-	})
+	});
+
+router.route('/:id/:attrType')
 	.put(function(req,res,next){
-		var type = req.body.attrType;
+		var type = req.params.attrType;
 		var attrId = req.body.attr;
-		models.models[type].findById(req.body.attr)
+		_models[type].findById(req.body.attr)
 		.then(function(attr){
 			req.day[type].push(attr._id);
 			return req.day.save();
 		})
-		.then(function(){
+		.then(function(day){
 			res.sendStatus(204);
-		})
-		.catch(function(err){
-			console.log(err);
-		});
+		}, next);
+		
 	});
+	
 
 
 module.exports = router;

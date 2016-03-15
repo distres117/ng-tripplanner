@@ -1,8 +1,8 @@
 require(['tripplanner', 'map'], function(Tripplanner, init){
   $(function() {
-      var fn = function(attractions){
+      var fn = function(){
 
-        new Tripplanner(attractions);
+        new Tripplanner();
       };
       init(fn);
   });
