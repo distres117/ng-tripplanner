@@ -12,7 +12,7 @@ placeSchema.methods.sayHi = function(){
   return this.address;
 };
 
-var Place = mongoose.model('place', placeSchema);
+var Place = mongoose.model('Place', placeSchema);
 
 var hotelSchema = mongoose.Schema({
   name: { type: String, required: true },
@@ -21,7 +21,7 @@ var hotelSchema = mongoose.Schema({
   place: placeSchema
 });
 
-var Hotel = mongoose.model('hotel', hotelSchema);
+var Hotel = mongoose.model('Hotel', hotelSchema);
 
 var restaurantSchema = mongoose.Schema({
   name: String,
@@ -30,7 +30,7 @@ var restaurantSchema = mongoose.Schema({
   place: placeSchema
 });
 
-var Restaurant = mongoose.model('restaurant', restaurantSchema);
+var Restaurant = mongoose.model('Restaurant', restaurantSchema);
 
 var activitySchema = mongoose.Schema({
   name: String,
@@ -38,13 +38,13 @@ var activitySchema = mongoose.Schema({
   place: placeSchema
 });
 
-var Activity = mongoose.model('activity', activitySchema);
+var Activity = mongoose.model('Activity', activitySchema);
 
 var daySchema = new mongoose.Schema({
   currentDay: Number,
-  hotel: {type: mongoose.Schema.Types.ObjectId, ref: 'hotel'},
-  restaurants: [{type: mongoose.Schema.Types.ObjectId, ref: 'restaurant'}],
-  activities: [{type: mongoose.Schema.Types.ObjectId, ref: 'activity'}],
+  Hotels: {type: mongoose.Schema.Types.ObjectId, ref: 'Hotel'},
+  Restaurants: [{type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant'}],
+  Activities: [{type: mongoose.Schema.Types.ObjectId, ref: 'Activity'}],
 
 });
 

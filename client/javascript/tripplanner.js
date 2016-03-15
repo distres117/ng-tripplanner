@@ -1,98 +1,87 @@
-/* globals $,Mapper */
+// /* globals $,Mapper */
 
-function Tripplanner(days, map, perm, attractions){
-  this.currentIdx = 0;
-  this.mapper = new Mapper(map, perm);
-  this.days = days;
+var ajax;
+function Tripplanner(attractions){
+  this.currentDay = null;
+  // this.mapper = new Mapper(map, perm);
   this.attractions = attractions;
   var that = this;
-  getRequest('/api', function(res){
+  ajax.getRequest('/api', function(res){
     if (res.length === 0)
       that.addDay();
-  }, function(err){
-    console.log(err);
+    else {
+      that.renderDayPicker();
+    }
   });
   this.init();
-  this.renderDayPicker(0);
 }
-
-Tripplanner.prototype.addDay = function(){
-  var that = this;
-  postRequest('/api', null, function(res){
-    var day = res.currentDay;
-    var link = $('<a />').html(day);
-    var li = $('<li />').append(link);
-    var prev = $('#dayPicker .active').removeClass('active');
-    li.addClass('active');
-    $('#dayPicker').append(li);
-  },function(err){
-    console.log(err);
-  });
-    // this.days.push(
-    //     {
-    //       Hotels: [],
-    //       Restaurants: [],
-    //       Activities: []
-    //     }
-    // );
-    // return this.days.length - 1;
-};
-
 
 Tripplanner.prototype.init = function(){
   var that = this;
+  //changing behavior for day-picker
   $('#dayPicker').on('click', 'li', function(){
     $(this).siblings().removeClass('active');
     $(this).addClass('active');
-    that.currentIdx = $(this).index();
+    that.currentDay = $(this).attr('value');
     that.renderDay();
   });
+
 
   this.dayListIterator(function(list){
     var that = this;
     list.on('click', 'li', function(){
       var id = $(this).attr('data-id');
       var category = $(this).attr('data-category');
+      console.log(id,category);
       var item = that.findItemByIdAndCategory(id, category);
       $(this).remove();
       that.removeItemFromDay(item);
     });
   });
-
+  //buttons for adding events
   this.categoryIterator(function(category){
     var btn = $('#' + category + 'Add');
     var that = this;
 
     btn.click(function(){
       var selector = that.getChooser(category);
-      if(that.days.length === 0 || !selector.val())
-        return;
-      var item = that.findItemByIdAndCategory(selector.val(), category);
+      var data = {
+        attrType: 'Hotel',
+        attr: selector.val()
+      };
+      ajax.putRequest('/api/' + that.currentDay, data, function(){
+        that.renderDay();
+      });
+      // if(that.days.length === 0 || !selector.val())
+      //   return;
 
-      // that.days[that.currentIdx][category].push(item._id);
-      // that.renderItem(item);
     });
   });
-
   $('#dayAdder').click(function(){
     that.addDay();
   });
 
   $('#dayRemover').click(function(){
-    that.days.splice(that.currentIdx, 1);
-    that.renderDayPicker(that.days.length > 0 ? 0: null);
+    var id = $('#dayPicker .active').attr('value');
+    ajax.deleteRequest('/api/' + id, function(){
+      that.renderDayPicker();
+    });
   });
 };
 
-Tripplanner.prototype.findItemByIdAndCategory = function(id, category){
-    return this.attractions[category].filter(function(_item){
-      return _item._id == id;
-    })[0];
+Tripplanner.prototype.addDay = function(){
+  var that = this;
+  ajax.postRequest('/api', null, function(res){
+    that.renderDayPicker();
+  },function(err){
+    console.log(err);
+  });
 };
 
-Tripplanner.prototype.categoryIterator = function(fn){
-  fn = fn.bind(this);
-  ['Hotels', 'Restaurants', 'Activities'].forEach(fn);
+Tripplanner.prototype.findItemByIdAndCategory = function(id, cat){
+  return this.attractions[category].filter(function(_item){
+      return _item._id == id;
+    })[0];
 };
 
 Tripplanner.prototype.getChooser = function(category){
@@ -116,6 +105,11 @@ Tripplanner.prototype.dayListIterator = function(fn){
     });
 };
 
+Tripplanner.prototype.categoryIterator = function(fn){
+  fn = fn.bind(this);
+  ['Hotels', 'Restaurants', 'Activities'].forEach(fn);
+};
+
 Tripplanner.prototype.resetLists = function(){
     this.dayListIterator(function(dayList){
       dayList.empty();
@@ -124,7 +118,7 @@ Tripplanner.prototype.resetLists = function(){
     this.chooserIterator(function(chooser){
       chooser.children().removeClass('hidden').show();
     });
-    this.mapper.reset();
+    // this.mapper.reset();
 };
 
 Tripplanner.prototype.hideItemInChooser = function(item){
@@ -146,49 +140,58 @@ Tripplanner.prototype.showItemInChooser = function(item){
 
 Tripplanner.prototype.removeItemFromDay = function(item){
     this.showItemInChooser(item);
-    var collection = this.days[this.currentIdx][item.category];
+    var collection = this.days[this.currentDay][item.category];
     var idx = collection.indexOf(item._id);
     collection.splice(idx, 1);
-    this.mapper.removeMarker(item);
+    // this.mapper.removeMarker(item);
 };
 
 Tripplanner.prototype.renderDayPicker = function(){
-
-    //$('#dayPicker').empty();
+    var current;
+    $('#dayPicker').empty();
     var that = this;
     getRequest('/api',function(res){
-      res.forEach(function(day, index){
-        var link = $('<a />').html(index + 1);
+      var picker = $('#dayPicker');
+      res.forEach(function(day,index){
+        var link = $('<a />').html(index+1);
         var li = $('<li />').append(link);
-        if(day === that.currentDay())
-          li.addClass('active');
-        $('#dayPicker').append(li);
+        li.attr('value', day._id);
+        picker.append(li);
       }, that);
-      that.renderDay();
+      if (picker.children().length === 1)
+        current = $('#dayPicker li').first();
+      else
+        current = $('#dayPicker li').last();
+      current.addClass('active');
+      that.currentDay = current.attr('value');
+
     },
     function(err){
       console.log(err);
     });
 };
 
-Tripplanner.prototype.currentDay = function(){
-  return this.days[this.currentIdx];
-};
-
+//Renders all items in current day
 Tripplanner.prototype.renderDay = function(){
     this.resetLists();
 
-    if(this.currentIdx === null)
+    if(this.currentDay === null)
       return;
-
-    var day = this.days[this.currentIdx];
-    this.categoryIterator(function(category){
-      var ids = day[category];
-      ids.forEach(function(id){
-        var item = this.findItemByIdAndCategory(id, category);
-        this.renderItem(item);
-      }, this);
+    var that = this;
+    ajax.getRequest('/api/' + this.currentDay, function(res){
+      var day = res;
+      console.log(res);
+      that.categoryIterator(function(category){
+        var ids = day[category];
+        ids.forEach(function(id){
+          var item = this.findItemByIdAndCategory(id, category);
+          this.renderItem(item);
+        }, that);
+      });
+    }, function(err){
+      console.log(err);
     });
+
 };
 
 Tripplanner.prototype.renderItem = function(item){
@@ -199,5 +202,9 @@ Tripplanner.prototype.renderItem = function(item){
     li.html(item.name);
     list.append(li);
     this.hideItemInChooser(item);
-    this.mapper.addMarker(item);
+    // this.mapper.addMarker(item);
 };
+define(['ajax'], function(_ajax){
+  ajax=_ajax;
+  return Tripplanner;
+});

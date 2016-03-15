@@ -5,50 +5,53 @@ var Promise = require('bluebird');
 
 var Day = models.models.Day;
 
-router.get('/', function(req, res, next) {
-	Day.find()
-	.then(function(days){
-		res.json(days);
-	});
-});
-
-router.get('/:day', function(req, res, next) {
-	Day.findOne({currentDay:req.params.day})
+router.param('id', function(req,res,next,id){
+	Day.findById(id)
 	.then(function(day){
-		res.json(day);
-	});
-});
-
-router.post('/', function(req, res, next) {
-	Day.count()
-	.then(function(count) {
-		var newDay = new Day({
-			currentDay: count+1
-		});
-		return newDay.save();
-	})
-	.then(function(day) {
-		res.json(day);
-	});
-});
-
-router.post('/:day/:attraction', function(req,res,next){
-	var type = req.params.attraction;
-	var model = models[type];
-	Day.findOne({currentDay: req.params.day})
-	.then(function(day){
-		var attrId = req.body.id;
-		if (type !== 'hotel')
-			day[type].push(attrId);
-		else {
-			day[type] = attrId;
-		}
-		return day.save();
-	})
-	.then(function(day){
-		res.json(day);
+		req.day = day;
+		next();
 	}, next);
-
 });
+
+router.route('/')
+	.get(function(req, res, next) {
+		Day.find()
+		.then(function(days){
+			res.json(days);
+		});
+	})
+.post(function(req, res, next) {
+	Day.create({})
+	.then(function(){
+		res.sendStatus(204);
+	});
+});
+
+router.route('/:id')
+	.get(function(req, res, next) {
+		res.json(req.day);
+	})
+	.delete(function(req,res,next){
+		req.day.remove()
+		.then(function(){
+			res.sendStatus(204);
+		}, next);
+	})
+	.put(function(req,res,next){
+		var type = req.body.attrType;
+		var attrId = req.body.attr;
+		models.models[type].findById(req.body.attr)
+		.then(function(attr){
+			req.day[type].push(attr._id);
+			return req.day.save();
+		})
+		.then(function(){
+			res.sendStatus(204);
+		})
+		.catch(function(err){
+			console.log(err);
+		});
+	});
+
 
 module.exports = router;

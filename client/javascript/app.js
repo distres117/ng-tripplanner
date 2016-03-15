@@ -1,7 +1,10 @@
-$(function() {
-    var fn = function(map, marker){
+require(['tripplanner', 'map'], function(Tripplanner, init){
+  $(function() {
+      var fn = function(attractions){
 
-      new Tripplanner([], map, marker, attractions);
-    };
-    initialize_gmaps(fn);
+        new Tripplanner(attractions);
+      };
+      init(fn);
+  });
+
 });
