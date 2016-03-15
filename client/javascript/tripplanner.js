@@ -32,10 +32,7 @@ Tripplanner.prototype.init = function(){
     list.on('click', 'li', function(){
       var id = $(this).attr('data-id');
       var category = $(this).attr('data-category');
-      console.log(id,category);
-      var item = that.findItemByIdAndCategory(id, category);
-      $(this).remove();
-      that.removeItemFromDay(item);
+      that.removeItemFromDay(id,category, $(this));
     });
   });
   //buttons for adding events
@@ -46,7 +43,8 @@ Tripplanner.prototype.init = function(){
     btn.click(function(){
       var selector = that.getChooser(category);
       var data = {
-        attr: selector.val()
+        attr: selector.val(),
+        method: 'PUT'
       };
       ajax.putRequest('/api/' + that.currentDay + '/' + category, data, function(){
         that.renderDay();
@@ -132,11 +130,15 @@ Tripplanner.prototype.showItemInChooser = function(item){
     option.show().removeClass('hidden');
 };
 
-Tripplanner.prototype.removeItemFromDay = function(item){
-    this.showItemInChooser(item);
-    var collection = this.days[this.currentDay][item.category];
-    var idx = collection.indexOf(item._id);
-    collection.splice(idx, 1);
+Tripplanner.prototype.removeItemFromDay = function(id, category, elem){
+    var data = {
+      attr: id,
+      method: 'DELETE'
+    };
+    ajax.putRequest('/api/' + this.currentDay +'/' + category, data, function(){
+      elem.remove();
+    });
+    //this.showItemInChooser(item);
     // this.mapper.removeMarker(item);
 };
 
@@ -193,6 +195,8 @@ Tripplanner.prototype.renderItem = function(item, category){
     li.attr('data-id', item._id);
     li.attr('data-category', category);
     li.html(item.name);
+    var btn = $('<button />').html('x').addClass('btn btn-danger btn-xs pull-right');
+    li.append(btn)
     list.append(li);
     this.hideItemInChooser(item);
     // this.mapper.addMarker(item);

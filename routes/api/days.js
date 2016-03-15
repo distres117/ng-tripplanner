@@ -49,14 +49,19 @@ router.route('/:id/:attrType')
 		var attrId = req.body.attr;
 		_models[type].findById(req.body.attr)
 		.then(function(attr){
-			req.day[type].push(attr._id);
+			if (req.body.method === 'PUT')
+				req.day[type].push(attr._id);
+			else
+				req.day[type].remove(attr._id);
 			return req.day.save();
 		})
 		.then(function(day){
 			res.sendStatus(204);
 		}, next);
 		
+		
 	});
+	
 	
 
 
