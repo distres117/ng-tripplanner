@@ -1,9 +1,14 @@
 // /* globals $,Mapper */
 
 var ajax;
-function Tripplanner(){
+var Mapper;
+
+function Tripplanner(map){
   this.currentDay = null;
-  // this.mapper = new Mapper(map, perm);
+
+  this.mapper = new Mapper(map);
+
+  console.log("map: ",map);
   var that = this;
   ajax.getRequest('/api', function(res){
     if (res.length === 0)
@@ -135,8 +140,10 @@ Tripplanner.prototype.removeItemFromDay = function(id, category, elem){
       attr: id,
       method: 'DELETE'
     };
+    var that = this;
     ajax.putRequest('/api/' + this.currentDay +'/' + category, data, function(){
       elem.remove();
+      that.mapper.removeMarker(id);
     });
     //this.showItemInChooser(item);
     // this.mapper.removeMarker(item);
@@ -171,6 +178,7 @@ Tripplanner.prototype.renderDayPicker = function(){
 //Renders all items in current day
 Tripplanner.prototype.renderDay = function(){
     this.resetLists();
+    this.mapper.reset();
 
     if(this.currentDay === null)
       return;
@@ -180,6 +188,7 @@ Tripplanner.prototype.renderDay = function(){
       that.categoryIterator(function(category){
         var items = day[category];
         items.forEach(function(item){
+          that.mapper.addMarker(item);
           this.renderItem(item, category);
         }, that);
       });
@@ -201,7 +210,8 @@ Tripplanner.prototype.renderItem = function(item, category){
     this.hideItemInChooser(item);
     // this.mapper.addMarker(item);
 };
-define(['ajax'], function(_ajax){
+define(['ajax', 'mapper'], function(_ajax, _Mapper){
   ajax=_ajax;
+  Mapper = _Mapper;
   return Tripplanner;
 });
