@@ -1,12 +1,11 @@
 {
-  "name": "tripplanner-static-ui",
+  "name": "ng-tripplanner",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "seed": "CONN=mongodb://localhost/tp-1601F node seed/tripplanner-seed.js",
-    "test": "CONN=mongodb://localhost/tp-1601F-test nodemon --exec ./node_modules/mocha/bin/mocha",
-    "start": "npm run seed & gulp sass:watch & CONN=mongodb://localhost/tp-1601F nodemon server.js"
+    "test": "nodemon --exec mocha",
+    "start": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
@@ -22,10 +21,7 @@
     "body-parser": "^1.15.0",
     "chalk": "^1.1.1",
     "express": "^4.13.4",
-    "gulp": "^3.9.1",
-    "gulp-sass": "^2.2.0",
     "mongoose": "^4.4.6",
-    "node-sass": "^3.4.2",
-    "swig": "^1.4.2"
+    "morgan": "^1.7.0"
   }
 }
